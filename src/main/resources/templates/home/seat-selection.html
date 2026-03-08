@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Select Seats</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        
+        .back-btn {
+            background: #6c757d;
+            color: white;
+            padding: 12px 30px;
+            border-radius: 25px;
+            text-decoration: none;
+            display: inline-block;
+            margin-bottom: 20px;
+            transition: background 0.3s;
+            cursor: pointer;
+        }
+        
+        .back-btn:hover { background: #5a6268; }
+        
+        .movie-info-card {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+        
+        .movie-info-card h2 {
+            font-size: 28px;
+            color: #333;
+            margin-bottom: 15px;
+        }
+        
+        .info-row {
+            display: flex;
+            gap: 30px;
+            margin-bottom: 10px;
+            color: #666;
+            font-size: 16px;
+            flex-wrap: wrap;
+        }
+        
+        .seat-selection-card {
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+        
+        .section-title {
+            font-size: 24px;
+            color: #333;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .screen {
+            background: linear-gradient(to bottom, #333, #666);
+            height: 80px;
+            margin: 0 auto 40px;
+            border-radius: 50% / 20%;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        
+        .seats-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 30px;
+            align-items: center;
+        }
+        
+        .seat-row {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .row-label {
+            font-weight: bold;
+            color: #667eea;
+            width: 40px;
+            text-align: center;
+            font-size: 16px;
+        }
+        
+        .seat {
+            width: 45px;
+            height: 45px;
+            background: #e0e0e0;
+            border: 2px solid #ccc;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: #666;
+            font-weight: bold;
+        }
+        
+        .seat:hover:not(.occupied) {
+            transform: scale(1.1);
+            border-color: #667eea;
+        }
+        
+        .seat.selected {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-color: #667eea;
+            color: white;
+        }
+        
+        .seat.occupied {
+            background: #f44336;
+            border-color: #d32f2f;
+            cursor: not-allowed;
+            color: white;
+        }
+        
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .legend-box {
+            width: 30px;
+            height: 30px;
+            border-radius: 6px;
+            border: 2px solid #ccc;
+        }
+        
+        .legend-box.available { background: #e0e0e0; }
+        .legend-box.selected {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-color: #667eea;
+        }
+        .legend-box.occupied {
+            background: #f44336;
+            border-color: #d32f2f;
+        }
+        
+        .booking-summary {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+        
+        .summary-row.total {
+            font-size: 22px;
+            font-weight: bold;
+            color: #333;
+            border-top: 2px solid #ddd;
+            padding-top: 15px;
+        }
+        
+        .selected-seats-list {
+            color: #667eea;
+            font-weight: bold;
+        }
+        
+        .book-button {
+            width: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 18px;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .book-button:hover:not(:disabled) { transform: translateY(-2px); }
+        .book-button:disabled { background: #ccc; cursor: not-allowed; }
+    </style>
+</head>
+<body>
+
+    <!-- ★ NAVIGATION BAR ★ -->
+    <nav style="width:100%; background:rgba(0,0,0,0.3); padding:15px 40px; display:flex; justify-content:space-between; align-items:center; backdrop-filter:blur(10px); position:fixed; top:0; z-index:1000;">
+        <a href="/" style="color:white; text-decoration:none; font-size:22px; font-weight:bold;">
+            🎬 <span style="color:#e94560;">Scope</span> Cinemas
+        </a>
+        <div style="display:flex; align-items:center; gap:5px;">
+            <a href="/" style="color:white; text-decoration:none; padding:8px 16px; border-radius:8px;">Home</a>
+            <span th:if="${loggedInUser != null}">
+                <a href="/my-bookings" style="color:white; text-decoration:none; padding:8px 16px; border-radius:8px;">My Bookings</a>
+                <span th:if="${loggedInUser.role == 'ADMIN'}">
+                    <a href="/movies" style="color:white; text-decoration:none; padding:8px 16px; border-radius:8px; background:rgba(255,165,0,0.3);">⚙️ Admin</a>
+                </span>
+                <span style="color:#e94560; font-weight:bold; margin:0 10px;" th:text="'👤 ' + ${loggedInUser.name}"></span>
+                <a href="/logout" style="color:white; text-decoration:none; padding:8px 16px; border-radius:8px; background:rgba(233,69,96,0.2); border:1px solid #e94560;">Logout</a>
+            </span>
+            <span th:if="${loggedInUser == null}">
+                <a href="/login" style="color:white; text-decoration:none; padding:8px 16px; border-radius:8px; background:rgba(233,69,96,0.2); border:1px solid #e94560;">Login</a>
+                <a href="/register" style="color:white; text-decoration:none; padding:8px 16px; border-radius:8px; background:linear-gradient(135deg,#e94560,#c23152);">Register</a>
+            </span>
+        </div>
+    </nav>
+    <div style="height: 70px;"></div>
+
+    <div class="container">
+        <a class="back-btn" onclick="history.back()">← Back</a>
+        
+        <div class="movie-info-card">
+            <h2 th:text="${movie.title}">Movie Title</h2>
+            <div class="info-row">
+                <span th:text="'📅 ' + ${showtime.showDate}">Date</span>
+                <span th:text="'🕐 ' + ${showtime.showTime}">Time</span>
+                <span th:text="'🏢 Theater: ' + ${theater.name}">Theater</span>
+                <span th:text="'💺 Capacity: ' + ${theater.capacity} + ' seats'">Capacity</span>
+                <span th:text="'💵 $' + ${showtime.price} + ' per seat'">Price</span>
+            </div>
+        </div>
+
+        <div class="seat-selection-card">
+            <h3 class="section-title">Select Your Seats</h3>
+            
+            <div class="screen">🎬 SCREEN 🎬</div>
+            
+            <div class="seats-container" id="seatsContainer"></div>
+            
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-box available"></div>
+                    <span>Available</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-box selected"></div>
+                    <span>Selected</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-box occupied"></div>
+                    <span>Occupied</span>
+                </div>
+            </div>
+            
+            <div class="booking-summary">
+                <div class="summary-row">
+                    <span>Selected Seats:</span>
+                    <span class="selected-seats-list" id="selectedSeatsList">None</span>
+                </div>
+                <div class="summary-row">
+                    <span>Number of Seats:</span>
+                    <span id="seatCount">0</span>
+                </div>
+                <div class="summary-row total">
+                    <span>Total Price:</span>
+                    <span id="totalPrice">$0.00</span>
+                </div>
+            </div>
+            
+            <button class="book-button" id="bookButton" disabled onclick="confirmBooking()">
+                Confirm Booking
+            </button>
+        </div>
+    </div>
+
+    <script th:inline="javascript">
+        var ticketPrice = /*[[${showtime.price}]]*/ 15.00;
+        var showtimeId = /*[[${showtime.id}]]*/ '';
+        var movieTitle = /*[[${movie.title}]]*/ '';
+        var bookedSeatsString = /*[[${bookedSeatsString}]]*/ '';
+        var theaterCapacity = /*[[${theater.capacity}]]*/ 48;
+        
+        var bookedSeatsFromServer = bookedSeatsString ? bookedSeatsString.split(',').map(function(s) { return s.trim(); }) : [];
+        
+        var selectedSeats = [];
+        var seatsPerRow = 10;
+        var totalRows = Math.ceil(theaterCapacity / seatsPerRow);
+        var rows = [];
+        
+        for (var i = 0; i < totalRows; i++) {
+            if (i < 26) {
+                rows.push(String.fromCharCode(65 + i));
+            } else {
+                var first = Math.floor((i - 26) / 26);
+                var second = (i - 26) % 26;
+                rows.push(String.fromCharCode(65 + first) + String.fromCharCode(65 + second));
+            }
+        }
+        
+        function generateSeats() {
+            var container = document.getElementById('seatsContainer');
+            container.innerHTML = '';
+            
+            var seatCounter = 0;
+            
+            rows.forEach(function(row) {
+                var rowDiv = document.createElement('div');
+                rowDiv.className = 'seat-row';
+                
+                var label = document.createElement('div');
+                label.className = 'row-label';
+                label.textContent = row;
+                rowDiv.appendChild(label);
+                
+                var seatsInThisRow = seatsPerRow;
+                var remainingSeats = theaterCapacity - seatCounter;
+                
+                if (remainingSeats < seatsPerRow) {
+                    seatsInThisRow = remainingSeats;
+                }
+                
+                for (var i = 1; i <= seatsInThisRow && seatCounter < theaterCapacity; i++) {
+                    var seat = document.createElement('div');
+                    var seatId = row + i;
+                    seat.className = 'seat';
+                    seat.textContent = i;
+                    seat.dataset.seatId = seatId;
+                    
+                    if (bookedSeatsFromServer.indexOf(seatId) !== -1) {
+                        seat.classList.add('occupied');
+                        seat.title = 'Already booked';
+                    } else {
+                        seat.addEventListener('click', (function(sid, seatEl) {
+                            return function() { toggleSeat(sid, seatEl); };
+                        })(seatId, seat));
+                    }
+                    
+                    rowDiv.appendChild(seat);
+                    seatCounter++;
+                }
+                
+                container.appendChild(rowDiv);
+            });
+        }
+        
+        function toggleSeat(seatId, seatElement) {
+            var index = selectedSeats.indexOf(seatId);
+            if (index !== -1) {
+                selectedSeats.splice(index, 1);
+                seatElement.classList.remove('selected');
+            } else {
+                selectedSeats.push(seatId);
+                seatElement.classList.add('selected');
+            }
+            updateSummary();
+        }
+        
+        function updateSummary() {
+            var count = selectedSeats.length;
+            var total = count * ticketPrice;
+            
+            document.getElementById('selectedSeatsList').textContent = 
+                count > 0 ? selectedSeats.sort().join(', ') : 'None';
+            document.getElementById('seatCount').textContent = count;
+            document.getElementById('totalPrice').textContent = '$' + total.toFixed(2);
+            
+            document.getElementById('bookButton').disabled = count === 0;
+        }
+        
+        function confirmBooking() {
+            if (selectedSeats.length === 0) {
+                alert('Please select at least one seat!');
+                return;
+            }
+            
+            var sortedSeats = selectedSeats.sort();
+            var totalPrice = (selectedSeats.length * ticketPrice).toFixed(2);
+            
+            if (confirm('Confirm booking for:\n\nMovie: ' + movieTitle + '\nSeats: ' + sortedSeats.join(', ') + '\nTotal: $' + totalPrice + '\n\nProceed?')) {
+                
+                document.getElementById('bookButton').textContent = 'Booking...';
+                document.getElementById('bookButton').disabled = true;
+                
+                var formData = new FormData();
+                formData.append('showtimeId', showtimeId);
+                formData.append('seatNumbers', sortedSeats.join(', '));
+                formData.append('numberOfSeats', selectedSeats.length);
+                formData.append('totalPrice', totalPrice);
+                
+                fetch('/book/confirm', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(function(response) { return response.text(); })
+                .then(function(data) {
+                    console.log('Server response: ' + data);
+                    if (data.startsWith('success')) {
+                        var parts = data.split(':');
+                        if (parts.length > 1 && parts[1].length > 0) {
+                            window.location.href = '/booking-receipt/' + parts[1];
+                        } else {
+                            window.location.href = '/my-bookings';
+                        }
+                    } else {
+                        alert('Booking failed: ' + data);
+                        document.getElementById('bookButton').textContent = 'Confirm Booking';
+                        document.getElementById('bookButton').disabled = false;
+                    }
+                })
+                .catch(function(error) {
+                    console.log('Error: ' + error);
+                    alert('An error occurred. Please try again.');
+                    document.getElementById('bookButton').textContent = 'Confirm Booking';
+                    document.getElementById('bookButton').disabled = false;
+                });
+            }
+        }
+        
+        generateSeats();
+    </script>
+</body>
+</html>

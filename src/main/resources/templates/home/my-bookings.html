@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Bookings - Scope Cinemas</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            min-height: 100vh;
+            color: white;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .page-title {
+            font-size: 32px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .no-bookings {
+            text-align: center;
+            padding: 60px 20px;
+            color: rgba(255,255,255,0.5);
+            font-size: 18px;
+        }
+        .no-bookings a { color: #e94560; text-decoration: none; }
+
+        .booking-card {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 16px;
+            padding: 25px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+            transition: 0.3s;
+        }
+        .booking-card:hover {
+            border-color: rgba(233,69,96,0.5);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .booking-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .movie-title {
+            font-size: 22px;
+            font-weight: bold;
+            color: #e94560;
+        }
+        .status-badge {
+            padding: 5px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        .status-confirmed {
+            background: rgba(46,213,115,0.2);
+            color: #2ed573;
+            border: 1px solid rgba(46,213,115,0.5);
+        }
+        .status-cancelled {
+            background: rgba(233,69,96,0.2);
+            color: #e94560;
+            border: 1px solid rgba(233,69,96,0.5);
+        }
+
+        .booking-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+        }
+        .detail-item {
+            padding: 10px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 10px;
+        }
+        .detail-label {
+            color: rgba(255,255,255,0.5);
+            font-size: 12px;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+        }
+        .detail-value {
+            font-size: 16px;
+            font-weight: 500;
+        }
+        .price-value {
+            color: #2ed573;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ★ NAVIGATION BAR ★ -->
+    <nav style="width:100%; background:rgba(0,0,0,0.3); padding:15px 40px; display:flex; justify-content:space-between; align-items:center; backdrop-filter:blur(10px); position:fixed; top:0; z-index:1000;">
+        <a href="/" style="color:white; text-decoration:none; font-size:22px; font-weight:bold;">
+            🎬 <span style="color:#e94560;">Scope</span> Cinemas
+        </a>
+        <div style="display:flex; align-items:center; gap:5px;">
+            <a href="/" style="color:white; text-decoration:none; padding:8px 16px; border-radius:8px;">Home</a>
+            <span th:if="${loggedInUser != null}">
+                <a href="/my-bookings" style="color:white; text-decoration:none; padding:8px 16px; border-radius:8px; background:rgba(233,69,96,0.2);">My Bookings</a>
+                <span th:if="${loggedInUser.role == 'ADMIN'}">
+                    <a href="/movies" style="color:white; text-decoration:none; padding:8px 16px; border-radius:8px; background:rgba(255,165,0,0.3);">⚙️ Admin</a>
+                </span>
+                <span style="color:#e94560; font-weight:bold; margin:0 10px;" th:text="'👤 ' + ${loggedInUser.name}"></span>
+                <a href="/logout" style="color:white; text-decoration:none; padding:8px 16px; border-radius:8px; background:rgba(233,69,96,0.2); border:1px solid #e94560;">Logout</a>
+            </span>
+        </div>
+    </nav>
+    <div style="height: 70px;"></div>
+
+    <div class="container">
+        <h1 class="page-title">🎟️ My Bookings</h1>
+
+        <!-- No Bookings -->
+        <div th:if="${#lists.isEmpty(bookings)}" class="no-bookings">
+            <p style="font-size: 50px; margin-bottom: 20px;">🎬</p>
+            <p>You haven't made any bookings yet!</p>
+            <p style="margin-top: 10px;"><a href="/">Browse Movies →</a></p>
+        </div>
+
+        <!-- Booking Cards -->
+        <div th:each="booking : ${bookings}" class="booking-card">
+            <th:block th:with="showtime=${showtimeMap.get(booking.showtimeId)}">
+
+                <div class="booking-header">
+                    <span class="movie-title"
+                          th:if="${showtime != null and movieMap.get(showtime.movieId) != null}"
+                          th:text="${movieMap.get(showtime.movieId).title}">
+                    </span>
+                    <span class="movie-title"
+                          th:if="${showtime == null or movieMap.get(showtime.movieId) == null}">
+                        Unknown Movie
+                    </span>
+                    <span class="status-badge"
+                          th:classappend="${booking.status == 'CONFIRMED' ? 'status-confirmed' : 'status-cancelled'}"
+                          th:text="${booking.status}">
+                    </span>
+                </div>
+
+                <div class="booking-details">
+                    <div class="detail-item">
+                        <div class="detail-label">🏢 Theater</div>
+                        <div class="detail-value"
+                             th:if="${showtime != null and theaterMap.get(showtime.theaterId) != null}"
+                             th:text="${theaterMap.get(showtime.theaterId).name}">
+                        </div>
+                        <div class="detail-value"
+                             th:if="${showtime == null or theaterMap.get(showtime.theaterId) == null}">
+                            N/A
+                        </div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">📅 Date</div>
+                        <div class="detail-value" th:text="${showtime != null ? showtime.showDate : 'N/A'}"></div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">🕐 Time</div>
+                        <div class="detail-value" th:text="${showtime != null ? showtime.showTime : 'N/A'}"></div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">💺 Seats</div>
+                        <div class="detail-value" th:text="${booking.seatNumbers}"></div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">🎫 No. of Seats</div>
+                        <div class="detail-value" th:text="${booking.numberOfSeats}"></div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">💰 Total Price</div>
+                        <div class="detail-value price-value" th:text="'Rs. ' + ${booking.totalPrice}"></div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">📋 Booking Date</div>
+                        <div class="detail-value" th:text="${booking.bookingDate}"></div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">🆔 Booking ID</div>
+                        <div class="detail-value" style="font-size: 12px;" th:text="${booking.id}"></div>
+                    </div>
+                </div>
+
+                <!-- ★ CANCEL BUTTON ★ -->
+                <div th:if="${booking.status == 'CONFIRMED'}" style="margin-top: 20px; text-align: right;">
+                    <form th:action="@{/my-bookings/cancel/{id}(id=${booking.id})}" method="post"
+                          onsubmit="return confirm('Are you sure you want to cancel this booking?');">
+                        <button type="submit" style="background:rgba(233,69,96,0.2); color:#e94560; border:1px solid #e94560; padding:10px 25px; border-radius:8px; cursor:pointer; font-size:14px; font-weight:bold; transition:0.3s;"
+                                onmouseover="this.style.background='#e94560'; this.style.color='white';"
+                                onmouseout="this.style.background='rgba(233,69,96,0.2)'; this.style.color='#e94560';">
+                            ❌ Cancel Booking
+                        </button>
+                    </form>
+                </div>
+                <div th:if="${booking.status == 'CANCELLED'}" style="margin-top: 15px; text-align: right;">
+                    <span style="color: rgba(255,255,255,0.3); font-style: italic;">This booking has been cancelled</span>
+                </div>
+
+            </th:block>
+        </div>
+    </div>
+
+</body>
+</html>

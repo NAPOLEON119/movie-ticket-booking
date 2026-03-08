@@ -1,0 +1,22 @@
+# Compiled files
+target/
+*.class
+
+# IDE files
+.idea/
+*.iml
+.vscode/
+*.swp
+
+# Maven wrapper (optional - can include if you want)
+# !.mvn/wrapper/maven-wrapper.jar
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Data files (optional - remove this line if you WANT to upload your data)
+# data/

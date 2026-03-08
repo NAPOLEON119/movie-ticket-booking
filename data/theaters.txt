@@ -1,0 +1,3 @@
+f41abe42-94f8-4085-8ece-b5f98ecf10b9|Kollupity Scope Cinema|10|3D
+e6d85538-898c-4a18-a203-f75d483417bf|PVR|100|Standard
+55ea87da-960c-4946-bd53-e8cd7c258faa|Hall A|55|Standard

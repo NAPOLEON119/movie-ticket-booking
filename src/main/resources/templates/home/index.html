@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scope Cinemas - Now Showing</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        /* ★ AHARONI FONT FOR ALL SLIDER TEXT ★ */
+        .slide-content, .slide-content * {
+            font-family: 'Aharoni', 'Arial Black', 'Impact', sans-serif;
+            }
+
+        /* ==================== ★ FULL PAGE SLIDER ★ ==================== */
+        .hero-slider {
+            position: relative;
+            width: 100%;
+            height: calc(100vh - 70px);
+            min-height: 500px;
+            overflow: hidden;
+        }
+
+        .slider-track {
+            display: flex;
+            height: 100%;
+            transition: transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        .slide {
+            min-width: 100%;
+            height: 100%;
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .slide-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .slide-no-image {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 150px;
+        }
+
+        /* ★ DARK OVERLAY ON EACH SLIDE ★ */
+        .slide-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(
+                to right,
+                rgba(0,0,0,0.85) 0%,
+                rgba(0,0,0,0.6) 40%,
+                rgba(0,0,0,0.2) 70%,
+                rgba(0,0,0,0.1) 100%
+            );
+            display: flex;
+            align-items: center;
+            padding: 0 80px;
+        }
+
+        .slide-content {
+            max-width: 600px;
+            opacity: 0;
+            transform: translateY(30px);
+            animation: slideContentIn 0.8s ease-out 0.3s forwards;
+        }
+
+        @keyframes slideContentIn {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ★ SCOPE CINEMAS BADGE ★ */
+        .cinema-badge {
+            display: inline-block;
+            background: rgba(233,69,96,0.2);
+            border: 1px solid #e94560;
+            color: #e94560;
+            padding: 6px 18px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: bold;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+        }
+
+        .slide-title {
+            font-size: 52px;
+            font-weight: bold;
+            color: white;
+            margin-bottom: 15px;
+            line-height: 1.1;
+            text-shadow: 2px 2px 20px rgba(0,0,0,0.8);
+        }
+
+        .slide-meta {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .slide-genre {
+            background: linear-gradient(135deg, #e94560, #c23152);
+            color: white;
+            padding: 6px 18px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .slide-info {
+            color: rgba(255,255,255,0.7);
+            font-size: 15px;
+        }
+
+        .slide-description {
+            color: rgba(255,255,255,0.7);
+            font-size: 16px;
+            line-height: 1.8;
+            margin-bottom: 30px;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            line-clamp: 3;
+            overflow: hidden;
+        }
+
+        .slide-buttons {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .slide-btn-primary {
+            display: inline-block;
+            background: linear-gradient(135deg, #e94560, #c23152);
+            color: white;
+            padding: 16px 40px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 16px;
+            transition: transform 0.3s, box-shadow 0.3s;
+            box-shadow: 0 5px 20px rgba(233,69,96,0.4);
+        }
+
+        .slide-btn-primary:hover {
+            transform: scale(1.05) translateY(-2px);
+            box-shadow: 0 10px 30px rgba(233,69,96,0.6);
+        }
+
+        .slide-btn-secondary {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255,255,255,0.1);
+            border: 2px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 14px 35px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 16px;
+            transition: 0.3s;
+            backdrop-filter: blur(10px);
+        }
+
+        .slide-btn-secondary:hover {
+            background: rgba(255,255,255,0.2);
+            border-color: white;
+            transform: translateY(-2px);
+        }
+
+        /* ★ SLIDER ARROWS ★ */
+        .slider-arrow {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 55px;
+            height: 55px;
+            background: rgba(0,0,0,0.4);
+            border: 2px solid rgba(255,255,255,0.2);
+            border-radius: 50%;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.3s;
+            z-index: 10;
+            backdrop-filter: blur(10px);
+        }
+
+        .slider-arrow:hover {
+            background: rgba(233,69,96,0.7);
+            border-color: #e94560;
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        .slider-arrow.prev { left: 25px; }
+        .slider-arrow.next { right: 25px; }
+
+        /* ★ SLIDER DOTS ★ */
+        .slider-dots {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 12px;
+            z-index: 10;
+        }
+
+        .slider-dot {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.3);
+            border: 2px solid rgba(255,255,255,0.5);
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .slider-dot.active {
+            background: #e94560;
+            border-color: #e94560;
+            transform: scale(1.3);
+            box-shadow: 0 0 15px rgba(233,69,96,0.6);
+        }
+
+        .slider-dot:hover {
+            background: rgba(233,69,96,0.5);
+            border-color: #e94560;
+        }
+
+        /* ★ PROGRESS BAR ★ */
+        .slider-progress {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #e94560, #667eea);
+            border-radius: 0 2px 0 0;
+            z-index: 10;
+            animation: progressBar 5s linear infinite;
+        }
+
+        @keyframes progressBar {
+            0% { width: 0%; }
+            100% { width: 100%; }
+        }
+
+        /* ★ SLIDE COUNTER ★ */
+        .slide-counter {
+            position: absolute;
+            top: 25px;
+            right: 25px;
+            background: rgba(0,0,0,0.5);
+            color: white;
+            padding: 8px 18px;
+            border-radius: 20px;
+            font-size: 14px;
+            z-index: 10;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        /* ★ SCROLL DOWN INDICATOR ★ */
+        .scroll-indicator {
+            position: absolute;
+            bottom: 70px;
+            right: 30px;
+            z-index: 10;
+            text-align: center;
+        }
+
+        .scroll-arrow {
+            width: 24px;
+            height: 24px;
+            border-right: 3px solid rgba(255,255,255,0.5);
+            border-bottom: 3px solid rgba(255,255,255,0.5);
+            transform: rotate(45deg);
+            margin: 0 auto;
+            animation: scrollBounce 2s ease-in-out infinite;
+        }
+
+        @keyframes scrollBounce {
+            0%, 100% { transform: rotate(45deg) translate(0, 0); opacity: 0.5; }
+            50% { transform: rotate(45deg) translate(5px, 5px); opacity: 1; }
+        }
+
+        .scroll-text {
+            color: rgba(255,255,255,0.4);
+            font-size: 11px;
+            margin-top: 8px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        /* ==================== ★ HERO FOR NO MOVIES ★ ==================== */
+        .hero-empty {
+            position: relative;
+            padding: 100px 20px 80px;
+            text-align: center;
+            color: white;
+            overflow: hidden;
+            min-height: 400px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .hero-empty::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: 
+                radial-gradient(2px 2px at 20% 30%, rgba(255,255,255,0.8), transparent),
+                radial-gradient(2px 2px at 40% 70%, rgba(255,255,255,0.6), transparent),
+                radial-gradient(2px 2px at 60% 20%, rgba(255,255,255,0.7), transparent),
+                radial-gradient(2px 2px at 80% 50%, rgba(255,255,255,0.5), transparent);
+            animation: twinkle 4s ease-in-out infinite alternate;
+            z-index: 0;
+        }
+
+        @keyframes twinkle {
+            0% { opacity: 0.3; }
+            100% { opacity: 0.8; }
+        }
+
+        .hero-empty-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-empty h1 {
+            font-size: 60px;
+            margin-bottom: 10px;
+        }
+
+        .hero-empty h1 .scope { color: #e94560; }
+
+        .hero-empty p {
+            color: rgba(255,255,255,0.6);
+            font-size: 20px;
+        }
+
+        /* ==================== MOVIES GRID ==================== */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 60px 20px;
+        }
+        
+        .section-title {
+            font-size: 32px;
+            color: white;
+            margin-bottom: 40px;
+            text-align: center;
+        }
+        
+        .movies-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 30px;
+        }
+        
+        .movie-card {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s, box-shadow 0.3s, border-color 0.3s;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+        }
+        
+        .movie-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 20px 50px rgba(233,69,96,0.3);
+            border-color: rgba(233,69,96,0.5);
+        }
+        
+        .movie-poster {
+            width: 100%;
+            height: 400px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 60px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .movie-info { padding: 20px; }
+        
+        .movie-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: white;
+            margin-bottom: 10px;
+        }
+        
+        .movie-meta {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+            font-size: 14px;
+            color: rgba(255,255,255,0.6);
+            flex-wrap: wrap;
+        }
+        
+        .movie-genre {
+            background: linear-gradient(135deg, #e94560, #c23152);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+        }
+        
+        .movie-description {
+            color: rgba(255,255,255,0.5);
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 15px;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            line-clamp: 3;
+            overflow: hidden;
+        }
+        
+        .book-btn {
+            display: inline-block;
+            background: linear-gradient(135deg, #e94560, #c23152);
+            color: white;
+            padding: 12px 30px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: transform 0.2s, box-shadow 0.3s;
+        }
+        
+        .book-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(233,69,96,0.5);
+        }
+        
+        footer {
+            background: rgba(0, 0, 0, 0.5);
+            color: rgba(255,255,255,0.6);
+            text-align: center;
+            padding: 30px 20px;
+            margin-top: 60px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: rgba(255,255,255,0.5);
+        }
+        
+        .empty-state h2 {
+            font-size: 28px;
+            margin-bottom: 20px;
+            color: white;
+        }
+
+        /* ★ RESPONSIVE ★ */
+        @media (max-width: 768px) {
+            .hero-slider { height: 70vh; min-height: 400px; }
+            .slide-overlay { padding: 0 30px; }
+            .slide-title { font-size: 30px; }
+            .slide-description { font-size: 14px; }
+            .slide-btn-primary { padding: 12px 25px; font-size: 14px; }
+            .slide-btn-secondary { padding: 10px 20px; font-size: 14px; }
+            .slider-arrow { width: 40px; height: 40px; font-size: 18px; }
+            .slider-arrow.prev { left: 10px; }
+            .slider-arrow.next { right: 10px; }
+            .cinema-badge { font-size: 11px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ★ NAVIGATION BAR ★ -->
+    <nav style="width:100%; background:rgba(0,0,0,0.3); padding:15px 40px; display:flex; justify-content:space-between; align-items:center; backdrop-filter:blur(10px); position:fixed; top:0; z-index:1000;">
+        <a href="/" style="color:white; text-decoration:none; font-size:22px; font-weight:bold;">
+            🎬 <span style="color:#e94560;">Scope</span> Cinemas
+        </a>
+        <div style="display:flex; align-items:center; gap:5px;">
+            <a href="/" style="color:white; text-decoration:none; padding:8px 16px; border-radius:8px;">Home</a>
+            <span th:if="${loggedInUser != null}">
+                <a href="/my-bookings" style="color:white; text-decoration:none; padding:8px 16px; border-radius:8px;">My Bookings</a>
+                <span th:if="${loggedInUser.role == 'ADMIN'}">
+                    <a href="/movies" style="color:white; text-decoration:none; padding:8px 16px; border-radius:8px; background:rgba(255,165,0,0.3);">⚙️ Admin</a>
+                </span>
+                <span style="color:#e94560; font-weight:bold; margin:0 10px;" th:text="'👤 ' + ${loggedInUser.name}"></span>
+                <a href="/logout" style="color:white; text-decoration:none; padding:8px 16px; border-radius:8px; background:rgba(233,69,96,0.2); border:1px solid #e94560;">Logout</a>
+            </span>
+            <span th:if="${loggedInUser == null}">
+                <a href="/login" style="color:white; text-decoration:none; padding:8px 16px; border-radius:8px; background:rgba(233,69,96,0.2); border:1px solid #e94560;">Login</a>
+                <a href="/register" style="color:white; text-decoration:none; padding:8px 16px; border-radius:8px; background:linear-gradient(135deg,#e94560,#c23152);">Register</a>
+            </span>
+        </div>
+    </nav>
+    <div style="height: 70px;"></div>
+
+    <!-- ★★★ FULL PAGE MOVIE SLIDER (when movies exist) ★★★ -->
+    <div class="hero-slider" id="heroSlider" th:if="${!#lists.isEmpty(movies)}">
+        <!-- Slide Counter -->
+        <div class="slide-counter" id="slideCounter">1 / <span th:text="${#lists.size(movies)}">3</span></div>
+
+        <!-- Slides -->
+        <div class="slider-track" id="sliderTrack">
+            <div class="slide" th:each="movie, iterStat : ${movies}">
+                <!-- Movie with poster -->
+                <img th:if="${movie.imageUrl != null and !movie.imageUrl.isEmpty()}"
+                     th:src="${movie.imageUrl}"
+                     class="slide-image"
+                     alt="Movie Banner"/>
+                <!-- Movie without poster -->
+                <div th:if="${movie.imageUrl == null or movie.imageUrl.isEmpty()}"
+                     class="slide-no-image">🎬</div>
+
+                <!-- ★ OVERLAY WITH MOVIE INFO ★ -->
+                <div class="slide-overlay">
+                    <div class="slide-content">
+                        <div class="cinema-badge">🎬 Scope Cinemas</div>
+                        <h2 class="slide-title" th:text="${movie.title}">Movie Title</h2>
+                        <div class="slide-meta">
+                            <span class="slide-genre" th:text="${movie.genre}">Action</span>
+                            <span class="slide-info" th:text="'🕐 ' + ${movie.duration} + ' min'">120 min</span>
+                            <span class="slide-info" th:text="'🌐 ' + ${movie.language}">English</span>
+                        </div>
+                        <p class="slide-description" th:text="${movie.description}">Description</p>
+                        <div class="slide-buttons">
+                            <a th:href="@{/movie/{id}(id=${movie.id})}" class="slide-btn-primary">🎟️ Book Now</a>
+                            <a th:href="@{/movie/{id}(id=${movie.id})}" class="slide-btn-secondary">ℹ️ Details</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Arrows -->
+        <div class="slider-arrow prev" onclick="prevSlide()">❮</div>
+        <div class="slider-arrow next" onclick="nextSlide()">❯</div>
+
+        <!-- Dots -->
+        <div class="slider-dots" id="sliderDots"></div>
+
+        <!-- Progress Bar -->
+        <div class="slider-progress" id="sliderProgress"></div>
+
+        <!-- Scroll Down -->
+        <div class="scroll-indicator">
+            <div class="scroll-arrow"></div>
+            <p class="scroll-text">Scroll</p>
+        </div>
+    </div>
+
+    <!-- ★ HERO FOR NO MOVIES ★ -->
+    <div class="hero-empty" th:if="${#lists.isEmpty(movies)}">
+        <div class="hero-empty-content">
+            <h1>🎬 <span class="scope">Scope</span> Cinemas</h1>
+            <p>No movies available right now. Check back soon!</p>
+        </div>
+    </div>
+
+    <!-- ★ MOVIES GRID SECTION ★ -->
+    <div class="container">
+        <h2 class="section-title">🎥 Now Showing</h2>
+
+        <div class="movies-grid" th:if="${!#lists.isEmpty(movies)}">
+            <div class="movie-card" th:each="movie : ${movies}">
+                <div class="movie-poster" th:if="${movie.imageUrl != null and !movie.imageUrl.isEmpty()}">
+                    <img th:src="${movie.imageUrl}" alt="Movie Poster" style="width: 100%; height: 100%; object-fit: cover;">
+                </div>
+                <div class="movie-poster" th:if="${movie.imageUrl == null or movie.imageUrl.isEmpty()}">🎬</div>
+                <div class="movie-info">
+                    <h3 class="movie-title" th:text="${movie.title}">Movie Title</h3>
+                    <div class="movie-meta">
+                        <span class="movie-genre" th:text="${movie.genre}">Genre</span>
+                        <span th:text="${movie.duration + ' min'}">120 min</span>
+                        <span th:text="${movie.language}">English</span>
+                    </div>
+                    <p class="movie-description" th:text="${movie.description}">Movie description goes here...</p>
+                    <a th:href="@{/movie/{id}(id=${movie.id})}" class="book-btn">Book Now →</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="empty-state" th:if="${#lists.isEmpty(movies)}">
+            <h2>No Movies Available</h2>
+            <p>Please check back later or contact the admin to add movies.</p>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2026 Scope Cinemas. All rights reserved.</p>
+        <p>Book your tickets online and enjoy the show!</p>
+    </footer>
+
+    <!-- ★★★ SLIDER JAVASCRIPT ★★★ -->
+    <script>
+        var currentSlide = 0;
+        var totalSlides = 0;
+        var autoPlayInterval;
+        var autoPlayDelay = 5000;
+
+        function initSlider() {
+            var track = document.getElementById('sliderTrack');
+            if (!track) return;
+
+            var slides = track.querySelectorAll('.slide');
+            totalSlides = slides.length;
+
+            if (totalSlides <= 0) return;
+
+            // Create dots
+            var dotsContainer = document.getElementById('sliderDots');
+            dotsContainer.innerHTML = '';
+            for (var i = 0; i < totalSlides; i++) {
+                var dot = document.createElement('div');
+                dot.className = 'slider-dot' + (i === 0 ? ' active' : '');
+                dot.setAttribute('onclick', 'goToSlide(' + i + ')');
+                dotsContainer.appendChild(dot);
+            }
+
+            startAutoPlay();
+
+            // Pause on hover
+            var container = document.getElementById('heroSlider');
+            if (container) {
+                container.addEventListener('mouseenter', stopAutoPlay);
+                container.addEventListener('mouseleave', startAutoPlay);
+
+                // Touch support
+                var startX = 0;
+                container.addEventListener('touchstart', function(e) {
+                    startX = e.touches[0].clientX;
+                });
+                container.addEventListener('touchend', function(e) {
+                    var endX = e.changedTouches[0].clientX;
+                    if (startX - endX > 50) nextSlide();
+                    if (endX - startX > 50) prevSlide();
+                });
+            }
+
+            // Keyboard
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'ArrowLeft') prevSlide();
+                if (e.key === 'ArrowRight') nextSlide();
+            });
+        }
+
+        function goToSlide(index) {
+            currentSlide = index;
+            var track = document.getElementById('sliderTrack');
+            track.style.transform = 'translateX(-' + (currentSlide * 100) + '%)';
+            updateDots();
+            updateCounter();
+            resetProgress();
+
+            // Re-animate slide content
+            var slides = track.querySelectorAll('.slide');
+            slides.forEach(function(slide, i) {
+                var content = slide.querySelector('.slide-content');
+                if (content) {
+                    if (i === currentSlide) {
+                        content.style.animation = 'none';
+                        content.offsetHeight;
+                        content.style.animation = 'slideContentIn 0.8s ease-out 0.3s forwards';
+                    } else {
+                        content.style.animation = 'none';
+                        content.style.opacity = '0';
+                        content.style.transform = 'translateY(30px)';
+                    }
+                }
+            });
+        }
+
+        function nextSlide() {
+            currentSlide = (currentSlide + 1) % totalSlides;
+            goToSlide(currentSlide);
+        }
+
+        function prevSlide() {
+            currentSlide = (currentSlide - 1 + totalSlides) % totalSlides;
+            goToSlide(currentSlide);
+        }
+
+        function updateDots() {
+            var dots = document.querySelectorAll('.slider-dot');
+            dots.forEach(function(dot, index) {
+                dot.className = 'slider-dot' + (index === currentSlide ? ' active' : '');
+            });
+        }
+
+        function updateCounter() {
+            var counter = document.getElementById('slideCounter');
+            if (counter) {
+                counter.textContent = (currentSlide + 1) + ' / ' + totalSlides;
+            }
+        }
+
+        function resetProgress() {
+            var progress = document.getElementById('sliderProgress');
+            if (progress) {
+                progress.style.animation = 'none';
+                progress.offsetHeight;
+                progress.style.animation = 'progressBar ' + (autoPlayDelay / 1000) + 's linear infinite';
+            }
+        }
+
+        function startAutoPlay() {
+            stopAutoPlay();
+            autoPlayInterval = setInterval(nextSlide, autoPlayDelay);
+            resetProgress();
+        }
+
+        function stopAutoPlay() {
+            if (autoPlayInterval) {
+                clearInterval(autoPlayInterval);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', initSlider);
+    </script>
+
+</body>
+</html>

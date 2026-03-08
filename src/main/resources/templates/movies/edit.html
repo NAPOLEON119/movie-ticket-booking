@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Edit Movie</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; max-width: 600px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 40px 20px; }
+        .form-container { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3); }
+        h1 { color: #333; margin-bottom: 30px; }
+        label { display: block; margin-top: 15px; font-weight: bold; color: #555; }
+        input, textarea { width: 100%; padding: 10px; margin-top: 5px; border: 2px solid #e0e0e0; border-radius: 6px; box-sizing: border-box; font-size: 14px; }
+        input:focus, textarea:focus { outline: none; border-color: #2196F3; }
+        textarea { height: 100px; resize: vertical; font-family: Arial, sans-serif; }
+        .btn { padding: 12px 24px; margin-top: 20px; margin-right: 10px; border: none; border-radius: 6px; cursor: pointer; text-decoration: none; display: inline-block; font-weight: bold; }
+        .btn-submit { background: linear-gradient(135deg, #2196F3, #1976D2); color: white; }
+        .btn-cancel { background: #6c757d; color: white; }
+        .btn:hover { opacity: 0.9; }
+        .help-text { font-size: 12px; color: #999; margin-top: 5px; font-style: italic; }
+        .image-preview { margin-top: 10px; max-width: 200px; border-radius: 8px; }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <h1>✏️ Edit Movie</h1>
+        
+        <form th:action="@{/movies/edit}" th:object="${movie}" method="post">
+            <input type="hidden" th:field="*{id}">
+            
+            <label for="title">Movie Title:</label>
+            <input type="text" id="title" th:field="*{title}" required>
+            
+            <label for="genre">Genre:</label>
+            <input type="text" id="genre" th:field="*{genre}" required>
+            
+            <label for="duration">Duration (minutes):</label>
+            <input type="number" id="duration" th:field="*{duration}" min="1" required>
+            
+            <label for="language">Language:</label>
+            <input type="text" id="language" th:field="*{language}" required>
+            
+            <label for="description">Description:</label>
+            <textarea id="description" th:field="*{description}" required></textarea>
+            
+            <label for="imageUrl">Movie Poster URL:</label>
+            <input type="url" id="imageUrl" th:field="*{imageUrl}" placeholder="https://example.com/poster.jpg" onchange="previewImage(this.value)">
+            <div class="help-text">Paste an image URL from the internet</div>
+            <img id="imagePreview" class="image-preview" th:src="${movie.imageUrl}" th:if="${movie.imageUrl}" alt="Preview">
+            
+            <button type="submit" class="btn btn-submit">Update Movie</button>
+            <a href="/movies" class="btn btn-cancel">Cancel</a>
+        </form>
+    </div>
+    
+    <script>
+        function previewImage(url) {
+            const preview = document.getElementById('imagePreview');
+            if (url) {
+                preview.src = url;
+                preview.style.display = 'block';
+            } else {
+                preview.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>

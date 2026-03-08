@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Edit Showtime</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; max-width: 600px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 40px 20px; }
+        .form-container { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3); }
+        h1 { color: #333; margin-bottom: 30px; }
+        label { display: block; margin-top: 15px; font-weight: bold; color: #555; }
+        input, select { width: 100%; padding: 10px; margin-top: 5px; border: 2px solid #e0e0e0; border-radius: 6px; box-sizing: border-box; font-size: 14px; }
+        input:focus, select:focus { outline: none; border-color: #4CAF50; }
+        .btn { padding: 12px 24px; margin-top: 20px; margin-right: 10px; border: none; border-radius: 6px; cursor: pointer; text-decoration: none; display: inline-block; font-weight: bold; }
+        .btn-submit { background: linear-gradient(135deg, #4CAF50, #45a049); color: white; }
+        .btn-cancel { background: #6c757d; color: white; }
+        .btn:hover { opacity: 0.9; }
+        .help-text { font-size: 12px; color: #999; margin-top: 5px; font-style: italic; }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <h1>✏️ Edit Showtime</h1>
+        
+        <form th:action="@{/showtimes/edit}" th:object="${showtime}" method="post">
+            <input type="hidden" th:field="*{id}">
+            
+            <label for="movieId">Select Movie: *</label>
+            <select id="movieId" th:field="*{movieId}" required>
+                <option th:each="movie : ${movies}" 
+                        th:value="${movie.id}" 
+                        th:text="${movie.title + ' (' + movie.genre + ', ' + movie.duration + ' min)'}"
+                        th:selected="${movie.id == showtime.movieId}">
+                </option>
+            </select>
+            
+            <label for="theaterId">Select Theater: *</label>
+            <select id="theaterId" th:field="*{theaterId}" required>
+                <option th:each="theater : ${theaters}" 
+                        th:value="${theater.id}" 
+                        th:text="${theater.name + ' (Capacity: ' + theater.capacity + ' seats, Type: ' + theater.type + ')'}"
+                        th:selected="${theater.id == showtime.theaterId}">
+                </option>
+            </select>
+            
+            <label for="showDate">Show Date: *</label>
+            <input type="date" id="showDate" th:field="*{showDate}" required>
+            
+            <label for="showTime">Show Time: *</label>
+            <input type="time" id="showTime" th:field="*{showTime}" required>
+            
+            <label for="price">Ticket Price ($): *</label>
+            <input type="number" step="0.01" id="price" th:field="*{price}" min="0" required>
+            
+            <button type="submit" class="btn btn-submit">Update Showtime</button>
+            <a href="/showtimes" class="btn btn-cancel">Cancel</a>
+        </form>
+    </div>
+</body>
+</html>

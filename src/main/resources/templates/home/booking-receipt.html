@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Booking Receipt</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            min-height: 100vh;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .receipt-container {
+            margin-top: 100px;
+            margin-bottom: 40px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 20px;
+            padding: 40px;
+            width: 500px;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            text-align: center;
+        }
+
+        .success-icon {
+            font-size: 60px;
+            margin-bottom: 15px;
+        }
+
+        .receipt-title {
+            font-size: 28px;
+            margin-bottom: 5px;
+            color: #2ed573;
+        }
+
+        .receipt-subtitle {
+            color: rgba(255,255,255,0.5);
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .receipt-details {
+            text-align: left;
+            background: rgba(255,255,255,0.03);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+
+        .receipt-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .receipt-row:last-child {
+            border-bottom: none;
+        }
+
+        .receipt-label {
+            color: rgba(255,255,255,0.5);
+            font-size: 14px;
+        }
+
+        .receipt-value {
+            font-weight: bold;
+            font-size: 15px;
+        }
+
+        .receipt-total {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px 20px;
+            background: rgba(46,213,115,0.1);
+            border: 1px solid rgba(46,213,115,0.3);
+            border-radius: 10px;
+            margin-bottom: 25px;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .receipt-total .price {
+            color: #2ed573;
+        }
+
+        .booking-id {
+            background: rgba(255,255,255,0.05);
+            padding: 10px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 12px;
+            color: rgba(255,255,255,0.4);
+            margin-bottom: 25px;
+            word-break: break-all;
+        }
+
+        .receipt-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 14px;
+            border: none;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            text-decoration: none;
+            text-align: center;
+            transition: 0.3s;
+        }
+
+        .btn-home {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-bookings {
+            background: rgba(233,69,96,0.2);
+            color: #e94560;
+            border: 1px solid #e94560;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .dashed-line {
+            border: none;
+            border-top: 2px dashed rgba(255,255,255,0.1);
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navigation -->
+    <nav style="width:100%; background:rgba(0,0,0,0.3); padding:15px 40px; display:flex; justify-content:space-between; align-items:center; backdrop-filter:blur(10px); position:fixed; top:0; z-index:1000;">
+        <a href="/" style="color:white; text-decoration:none; font-size:22px; font-weight:bold;">
+            🎬 <span style="color:#e94560;">Scope</span> Cinemas
+        </a>
+        <div style="display:flex; align-items:center; gap:5px;">
+            <a href="/" style="color:white; text-decoration:none; padding:8px 16px; border-radius:8px;">Home</a>
+            <a href="/my-bookings" style="color:white; text-decoration:none; padding:8px 16px; border-radius:8px;">My Bookings</a>
+            <span style="color:#e94560; font-weight:bold; margin:0 10px;" th:text="'👤 ' + ${loggedInUser.name}"></span>
+            <a href="/logout" style="color:white; text-decoration:none; padding:8px 16px; border-radius:8px; background:rgba(233,69,96,0.2); border:1px solid #e94560;">Logout</a>
+        </div>
+    </nav>
+
+    <div class="receipt-container">
+        <div class="success-icon">🎉</div>
+        <h2 class="receipt-title">Booking Confirmed!</h2>
+        <p class="receipt-subtitle">Your tickets have been booked successfully</p>
+
+        <hr class="dashed-line">
+
+        <div class="receipt-details">
+            <div class="receipt-row">
+                <span class="receipt-label">🎬 Movie</span>
+                <span class="receipt-value" th:text="${movie != null ? movie.title : 'N/A'}"></span>
+            </div>
+            <div class="receipt-row">
+                <span class="receipt-label">🏢 Theater</span>
+                <span class="receipt-value" th:text="${theater != null ? theater.name : 'N/A'}"></span>
+            </div>
+            <div class="receipt-row">
+                <span class="receipt-label">📅 Date</span>
+                <span class="receipt-value" th:text="${showtime != null ? showtime.showDate : 'N/A'}"></span>
+            </div>
+            <div class="receipt-row">
+                <span class="receipt-label">🕐 Time</span>
+                <span class="receipt-value" th:text="${showtime != null ? showtime.showTime : 'N/A'}"></span>
+            </div>
+            <div class="receipt-row">
+                <span class="receipt-label">💺 Seats</span>
+                <span class="receipt-value" th:text="${booking.seatNumbers}"></span>
+            </div>
+            <div class="receipt-row">
+                <span class="receipt-label">🎫 Tickets</span>
+                <span class="receipt-value" th:text="${booking.numberOfSeats}"></span>
+            </div>
+            <div class="receipt-row">
+                <span class="receipt-label">👤 Customer</span>
+                <span class="receipt-value" th:text="${loggedInUser.name}"></span>
+            </div>
+        </div>
+
+        <div class="receipt-total">
+            <span>Total Paid</span>
+            <span class="price" th:text="'Rs. ' + ${booking.totalPrice}"></span>
+        </div>
+
+        <div class="booking-id">
+            Booking ID: <span th:text="${booking.id}"></span>
+        </div>
+
+        <div class="receipt-buttons">
+            <a href="/" class="btn btn-home">🏠 Home</a>
+            <a href="/my-bookings" class="btn btn-bookings">🎟️ My Bookings</a>
+        </div>
+    </div>
+
+</body>
+</html>

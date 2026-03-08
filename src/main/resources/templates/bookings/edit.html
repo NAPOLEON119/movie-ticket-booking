@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Edit Booking</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; max-width: 600px; }
+        h1 { color: #333; }
+        form { background-color: #f9f9f9; padding: 20px; border-radius: 8px; }
+        label { display: block; margin-top: 15px; font-weight: bold; }
+        input, select { width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
+        .btn { padding: 10px 20px; margin-top: 20px; margin-right: 10px; border: none; border-radius: 4px; cursor: pointer; text-decoration: none; display: inline-block; }
+        .btn-submit { background-color: #4CAF50; color: white; }
+        .btn-cancel { background-color: #666; color: white; }
+    </style>
+</head>
+<body>
+    <h1>✏️ Edit Booking</h1>
+    
+    <form th:action="@{/bookings/edit}" th:object="${booking}" method="post">
+        <input type="hidden" th:field="*{id}">
+        <input type="hidden" th:field="*{bookingDate}">
+        
+        <label for="userId">User ID:</label>
+        <input type="text" id="userId" th:field="*{userId}" required>
+        
+        <label for="showtimeId">Showtime ID:</label>
+        <input type="text" id="showtimeId" th:field="*{showtimeId}" required>
+        
+        <label for="numberOfSeats">Number of Seats:</label>
+        <input type="number" id="numberOfSeats" th:field="*{numberOfSeats}" min="1" required>
+        
+        <label for="seatNumbers">Seat Numbers:</label>
+        <input type="text" id="seatNumbers" th:field="*{seatNumbers}" required>
+        
+        <label for="totalPrice">Total Price ($):</label>
+        <input type="number" step="0.01" id="totalPrice" th:field="*{totalPrice}" required>
+        
+        <label for="status">Status:</label>
+        <select id="status" th:field="*{status}" required>
+            <option value="Confirmed">Confirmed</option>
+            <option value="Cancelled">Cancelled</option>
+        </select>
+        
+        <button type="submit" class="btn btn-submit">Update Booking</button>
+        <a href="/bookings" class="btn btn-cancel">Cancel</a>
+    </form>
+</body>
+</html>

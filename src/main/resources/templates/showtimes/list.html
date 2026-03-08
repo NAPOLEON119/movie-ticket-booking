@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Showtimes Management</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        /* Header */
+        .admin-header {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            margin-bottom: 30px;
+        }
+        
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .admin-title {
+            font-size: 32px;
+            color: #333;
+            font-weight: bold;
+        }
+        
+        .admin-title span {
+            color: #667eea;
+        }
+        
+        .home-btn {
+            background: linear-gradient(135deg, #FF9800, #FF5722);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: transform 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .home-btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        /* Navigation */
+        .nav-menu {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .nav-menu a {
+            padding: 12px 24px;
+            text-decoration: none;
+            background: #f0f0f0;
+            color: #555;
+            border-radius: 10px;
+            font-weight: 500;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .nav-menu a:hover {
+            background: #e0e0e0;
+            transform: translateY(-2px);
+        }
+        
+        .nav-menu a.active {
+            background: linear-gradient(135deg, #FF5722, #E64A19);
+            color: white;
+            box-shadow: 0 4px 15px rgba(255, 87, 34, 0.3);
+        }
+        
+        /* Content Card */
+        .content-card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+        
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        
+        .page-title {
+            font-size: 28px;
+            color: #333;
+            font-weight: bold;
+        }
+        
+        .btn-add {
+            background: linear-gradient(135deg, #FF5722, #E64A19);
+            color: white;
+            padding: 14px 28px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: transform 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-add:hover {
+            transform: translateY(-2px);
+        }
+        
+        /* Table */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+        
+        thead {
+            background: linear-gradient(135deg, #FF5722, #E64A19);
+            color: white;
+        }
+        
+        th {
+            padding: 16px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 14px;
+            text-transform: uppercase;
+        }
+        
+        td {
+            padding: 16px;
+            border-bottom: 1px solid #f0f0f0;
+            color: #555;
+        }
+        
+        tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .btn {
+            padding: 8px 16px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.2s;
+            display: inline-block;
+            margin-right: 5px;
+        }
+        
+        .btn-edit {
+            background: #4CAF50;
+            color: white;
+        }
+        
+        .btn-edit:hover {
+            background: #45a049;
+        }
+        
+        .btn-delete {
+            background: #f44336;
+            color: white;
+        }
+        
+        .btn-delete:hover {
+            background: #d32f2f;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+        
+        .empty-state h3 {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Admin Header -->
+        <div class="admin-header">
+            <div class="header-top">
+                <h1 class="admin-title">⚙️ Admin <span>Dashboard</span></h1>
+                <a href="/" class="home-btn">🏠 Customer Site</a>
+            </div>
+            
+            <!-- Navigation Menu -->
+            <nav class="nav-menu">
+                <a href="/movies">🎬 Movies</a>
+                <a href="/users">👤 Users</a>
+                <a href="/theaters">🏢 Theaters</a>
+                <a href="/showtimes" class="active">⏰ Showtimes</a>
+                <a href="/bookings">🎫 Bookings</a>
+            </nav>
+        </div>
+
+        <!-- Content Card -->
+        <div class="content-card">
+            <div class="page-header">
+                <h2 class="page-title">⏰ Showtime Management</h2>
+                <a href="/showtimes/add" class="btn-add">+ Add New Showtime</a>
+            </div>
+            
+            <table th:if="${!#lists.isEmpty(showtimes)}">
+    <thead>
+        <tr>
+            <th>Movie</th>
+            <th>Theater</th>
+            <th>Date</th>
+            <th>Time</th>
+            <th>Price</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr th:each="showtime : ${showtimes}">
+            <td>
+                <span th:each="movie : ${movies}" th:if="${movie.id == showtime.movieId}" th:text="${movie.title}"></span>
+                <span th:if="${#lists.isEmpty(movies)}" th:text="${showtime.movieId}"></span>
+            </td>
+            <td>
+                <span th:each="theater : ${theaters}" th:if="${theater.id == showtime.theaterId}" th:text="${theater.name}"></span>
+                <span th:if="${#lists.isEmpty(theaters)}" th:text="${showtime.theaterId}"></span>
+            </td>
+            <td th:text="${showtime.showDate}"></td>
+            <td th:text="${showtime.showTime}"></td>
+            <td th:text="${'$' + showtime.price}"></td>
+            <td>
+                <a th:href="@{/showtimes/edit/{id}(id=${showtime.id})}" class="btn btn-edit">Edit</a>
+                <a th:href="@{/showtimes/delete/{id}(id=${showtime.id})}" class="btn btn-delete" 
+                   onclick="return confirm('Are you sure you want to delete this showtime?')">Delete</a>
+            </td>
+        </tr>
+    </tbody>
+</table>
+            
+            <div class="empty-state" th:if="${#lists.isEmpty(showtimes)}">
+                <h3>No Showtimes Found</h3>
+                <p>Click "Add New Showtime" to get started!</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
